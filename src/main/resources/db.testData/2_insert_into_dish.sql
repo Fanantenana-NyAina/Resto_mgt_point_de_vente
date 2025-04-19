@@ -1,0 +1,1 @@
+insert into dish(id, name, price) values (1,'Hot Dog',15000.0)
