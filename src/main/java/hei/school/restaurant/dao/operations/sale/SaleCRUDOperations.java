@@ -2,15 +2,19 @@ package hei.school.restaurant.dao.operations.sale;
 
 import hei.school.restaurant.dao.DataSource;
 import hei.school.restaurant.dao.operations.CRUDOperations;
+import hei.school.restaurant.endpoint.rest.BestSaleDTO;
 import hei.school.restaurant.endpoint.rest.DishSale;
 import hei.school.restaurant.model.Dish;
 import hei.school.restaurant.model.sale.Sale;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.client.RestTemplate;
 
 import java.sql.Connection;
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
@@ -20,6 +24,7 @@ import java.util.List;
 @Repository
 public class SaleCRUDOperations implements CRUDOperations<Sale> {
     private final DataSource dataSource;
+    private final String API_URL = "http://localhost:8080/bestSales";
 
     @Override
     public List<Sale> getAll(Integer page, Integer size) {
@@ -71,6 +76,28 @@ public class SaleCRUDOperations implements CRUDOperations<Sale> {
                 }
             }
         }
+        sendBestSalesToApi(sales);
         return sales;
+    }
+
+    private void sendBestSalesToApi(List<Sale> sales) {
+        List<BestSaleDTO> bestSalesDTOs = new ArrayList<>();
+        for (Sale sale : sales) {
+            BestSaleDTO dto = new BestSaleDTO(
+                    (long) sale.getDish().getId(),
+                    sale.getDish().getName(),
+                    sale.getQuantitySold(),
+                    sale.getTotalPrice()
+            );
+            bestSalesDTOs.add(dto);
+        }
+
+        RestTemplate restTemplate = new RestTemplate();
+
+        HttpEntity<List<BestSaleDTO>> request = new HttpEntity<>(bestSalesDTOs);
+
+        ResponseEntity<String> response = restTemplate.exchange(API_URL, HttpMethod.POST, request, String.class);
+
+        System.out.println("Réponse de l'API : " + response.getBody());
     }
 }

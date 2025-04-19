@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Date;
 
 @RestController
 @AllArgsConstructor
@@ -16,7 +15,10 @@ public class SaleRestController {
     private final SaleService saleService;
 
     @GetMapping("/bestSales")
-    public ResponseEntity<Object> getDishSales(@RequestParam String startDate,@RequestParam String endDate,@RequestParam int limit) {
+    public ResponseEntity<Object> getDishSales(
+            @RequestParam String startDate,
+            @RequestParam String endDate,
+            @RequestParam(value = "limit", defaultValue = "10") int limit) {
         return ResponseEntity.status(HttpStatus.OK).body(saleService.getDishSales(startDate, endDate, limit));
     }
 }
